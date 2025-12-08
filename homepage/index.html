@@ -73,9 +73,20 @@
         <div class="section-actions">
             <button class="section-btn" id="addSectionBtn" type="button">
                 <i class="fas fa-layer-group"></i>
-                <span>Add Section</span>
+                <span class="btn-text">Add Section</span>
             </button>
+            <div class="data-controls">
+                <button class="data-btn export-btn" id="exportDataBtn" type="button" title="Export all data to JSON file">
+                    <i class="fas fa-download"></i>
+                    <span class="btn-text">Export</span>
+                </button>
+                <button class="data-btn import-btn" id="importDataBtn" type="button" title="Import data from JSON file">
+                    <i class="fas fa-upload"></i>
+                    <span class="btn-text">Import</span>
+                </button>
+            </div>
         </div>
+        <input type="file" id="importFileInput" accept=".json" style="display: none;">
         <section class="shortcuts-grid" id="shortcutsGrid">
             <!-- Icons will be dynamically inserted here by JavaScript -->
         </section>

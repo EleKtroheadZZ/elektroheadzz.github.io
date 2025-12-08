@@ -8,11 +8,11 @@
 // Get token at: https://github.com/settings/tokens
 
 const GIST_CONFIG = {
-    enabled: false, // Set to true to enable Gist sync
-    token: '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', // Your GitHub Personal Access Token (paste here)
-    gistId: '18db801cff0b5651b69963cb0f6a6460', // Your Gist ID (paste here)
+    enabled: false, // Disabled - using Export/Import instead
+    token: '', // Not needed for Export/Import
+    gistId: '', // Not needed for Export/Import
     filename: 'homepage-data.json',
-    autoSyncDelay: 2000 // Auto-sync after 2 seconds of inactivity
+    autoSyncDelay: 2000
 };
 
 // ========================================
@@ -1471,6 +1471,141 @@ function populateCategoryDropdowns() {
     }
 }
 
+// ========================================
+// EXPORT/IMPORT FUNCTIONALITY
+// ========================================
+
+function exportData() {
+    const data = {
+        categories: categories,
+        categoryStates: JSON.parse(localStorage.getItem('categoryStates') || '{}'),
+        darkMode: localStorage.getItem('darkMode'),
+        websites: JSON.parse(localStorage.getItem('websites') || '[]'),
+        exportedAt: new Date().toISOString(),
+        version: '1.0'
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const dateStr = new Date().toISOString().split('T')[0];
+    a.download = `homepage-backup-${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    // Show success message
+    showNotification('Data exported successfully! Check your Downloads folder.', 'success');
+}
+
+function importData() {
+    const fileInput = document.getElementById('importFileInput');
+    fileInput.click();
+}
+
+function handleImportFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = JSON.parse(e.target.result);
+            
+            // Validate data structure
+            if (!data.categories || !Array.isArray(data.categories)) {
+                throw new Error('Invalid data format: missing categories array');
+            }
+            
+            // Confirm before overwriting
+            if (!confirm('This will replace all your current data. Continue?')) {
+                return;
+            }
+            
+            // Import data
+            categories = data.categories;
+            saveCategories();
+            
+            // Restore other settings
+            if (data.categoryStates) {
+                localStorage.setItem('categoryStates', JSON.stringify(data.categoryStates));
+            }
+            if (data.darkMode) {
+                localStorage.setItem('darkMode', data.darkMode);
+            }
+            if (data.websites) {
+                localStorage.setItem('websites', JSON.stringify(data.websites));
+            }
+            
+            // Refresh the page to show imported data
+            showNotification('Data imported successfully! Refreshing...', 'success');
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+            
+        } catch (error) {
+            console.error('Import error:', error);
+            showNotification('Error importing data: ' + error.message, 'error');
+        }
+    };
+    
+    reader.onerror = () => {
+        showNotification('Error reading file', 'error');
+    };
+    
+    reader.readAsText(file);
+    
+    // Reset file input
+    event.target.value = '';
+}
+
+function showNotification(message, type = 'info') {
+    // Remove existing notification if any
+    const existing = document.getElementById('notification');
+    if (existing) {
+        existing.remove();
+    }
+    
+    const notification = document.createElement('div');
+    notification.id = 'notification';
+    notification.textContent = message;
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        z-index: 10000;
+        animation: slideIn 0.3s ease;
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    `;
+    
+    if (type === 'success') {
+        notification.style.background = 'rgba(52, 211, 153, 0.9)';
+        notification.style.color = 'white';
+    } else if (type === 'error') {
+        notification.style.background = 'rgba(248, 113, 113, 0.9)';
+        notification.style.color = 'white';
+    } else {
+        notification.style.background = 'rgba(102, 126, 234, 0.9)';
+        notification.style.color = 'white';
+    }
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
 // Setup modal event handlers
 function setupModalHandlers() {
     // Populate category dropdowns
@@ -1536,6 +1671,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadCategories(); // Wait for Gist data to load
     renderShortcuts();
     setupModalHandlers();
+    
+    // Setup Export/Import buttons
+    const exportBtn = document.getElementById('exportDataBtn');
+    const importBtn = document.getElementById('importDataBtn');
+    const importFileInput = document.getElementById('importFileInput');
+    
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportData);
+    }
+    if (importBtn) {
+        importBtn.addEventListener('click', importData);
+    }
+    if (importFileInput) {
+        importFileInput.addEventListener('change', handleImportFile);
+    }
 });
 
 // Keyboard shortcuts
