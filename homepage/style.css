@@ -1,4 +1,7 @@
 /* CSS Variables for theming */
+
+
+
 :root {
     --bg-color: #f5f7fa;
     --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -435,7 +438,7 @@ body.dark-mode .x-widget .widget-btn {
     }
 }
 
-/* Category Header - Static */
+/* Category Header - Draggable for reordering */
 .category-header {
     display: flex;
     align-items: center;
@@ -444,6 +447,34 @@ body.dark-mode .x-widget .widget-btn {
     margin-bottom: 12px;
     border-bottom: 1px solid var(--input-border);
     user-select: none;
+    cursor: grab;
+    transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.category-header:active {
+    cursor: grabbing;
+}
+
+.category-header.dragging-section {
+    opacity: 0.4;
+}
+
+.section-drag-handle {
+    color: var(--text-color);
+    opacity: 0.4;
+    font-size: 14px;
+    cursor: grab;
+    padding: 4px;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    margin-left: -4px;
+}
+
+.category-header:hover .section-drag-handle {
+    opacity: 0.7;
+}
+
+.section-drag-handle:active {
+    cursor: grabbing;
 }
 
 .category-header-content {
@@ -494,6 +525,21 @@ body.dark-mode .x-widget .widget-btn {
 .section-edit-btn:focus-visible {
     outline: 2px solid var(--accent-primary);
     outline-offset: 2px;
+}
+
+/* Section Drag Placeholder */
+.section-placeholder {
+    background: rgba(102, 126, 234, 0.1);
+    border: 2px dashed var(--accent-primary);
+    border-radius: 20px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.category-section.dragging-section {
+    opacity: 0.4;
+    transform: scale(0.98);
 }
 
 /* Category Grid - Dense Matrix */
@@ -1178,6 +1224,7 @@ body.dark-mode .form-group input::placeholder {
     color: rgba(255, 255, 255, 0.4);
 }
 
+
 .form-group input:focus,
 .form-group select:focus {
     border-color: var(--accent-primary);
@@ -1200,7 +1247,6 @@ body.dark-mode .form-group select:focus {
     justify-content: flex-end;
     margin-top: 24px;
 }
-
 .btn-primary,
 .btn-secondary {
     padding: 12px 24px;

@@ -459,6 +459,11 @@ let draggedCategoryIndex = null;
 let draggedItemIndex = null;
 let placeholder = null;
 
+// Section drag variables
+let draggedSectionIndex = null;
+let draggedSectionElement = null;
+let sectionPlaceholder = null;
+
 // Cache DOM elements for better performance
 const elements = {
     grid: null,
@@ -498,9 +503,18 @@ function renderShortcuts() {
         categorySection.className = 'category-section';
         categorySection.setAttribute('data-category-id', category.id);
         
-        // Create category header (static)
+        // Create category header (draggable for section reordering)
         const categoryHeader = document.createElement('div');
         categoryHeader.className = 'category-header';
+        categoryHeader.draggable = true;
+        categoryHeader.setAttribute('data-section-index', categoryIndex);
+        
+        // Add drag handle icon
+        const dragHandle = document.createElement('span');
+        dragHandle.className = 'section-drag-handle';
+        dragHandle.innerHTML = '<i class="fas fa-grip-vertical"></i>';
+        dragHandle.title = 'Drag to reorder section';
+        
         const headerContent = document.createElement('div');
         headerContent.className = 'category-header-content';
         
@@ -515,6 +529,8 @@ function renderShortcuts() {
         
         headerContent.appendChild(categoryIcon);
         headerContent.appendChild(categoryTitle);
+        
+        categoryHeader.appendChild(dragHandle);
         
         const countBadge = document.createElement('span');
         countBadge.className = 'category-count';
@@ -533,6 +549,10 @@ function renderShortcuts() {
         categoryHeader.appendChild(headerContent);
         categoryHeader.appendChild(countBadge);
         categoryHeader.appendChild(editSectionBtn);
+        
+        // Add section drag event listeners
+        categoryHeader.addEventListener('dragstart', handleSectionDragStart);
+        categoryHeader.addEventListener('dragend', handleSectionDragEnd);
         
         // Create category grid (always visible)
         const categoryGrid = document.createElement('div');
@@ -615,6 +635,10 @@ function renderShortcuts() {
         categorySection.appendChild(categoryGrid);
         grid.appendChild(categorySection);
     });
+    
+    // Add section drag-over and drop handlers to the grid container
+    grid.addEventListener('dragover', handleSectionDragOver);
+    grid.addEventListener('drop', handleSectionDrop);
     
     // Add "Add Site" button at the end
     const addButton = document.createElement('div');
@@ -833,6 +857,12 @@ function getDragAfterElement(container, x, y) {
 
 // Drag and drop handlers
 function handleDragStart(e) {
+    // Prevent app dragging when section is being dragged
+    if (draggedSectionIndex !== null) {
+        e.preventDefault();
+        return;
+    }
+    
     draggedElement = this;
     draggedCategoryIndex = parseInt(this.getAttribute('data-category-index'));
     draggedItemIndex = parseInt(this.getAttribute('data-item-index'));
@@ -856,6 +886,9 @@ function handleDragStart(e) {
 }
 
 function handleDragOver(e) {
+    // Ignore if section is being dragged
+    if (draggedSectionIndex !== null) return false;
+    
     if (e.preventDefault) {
         e.preventDefault();
     }
@@ -978,6 +1011,144 @@ function handleDragEnd(e) {
     draggedCategoryIndex = null;
     draggedItemIndex = null;
     placeholder = null;
+}
+
+// ========================================
+// SECTION DRAG AND DROP HANDLERS
+// ========================================
+
+function handleSectionDragStart(e) {
+    // Prevent app dragging when dragging section
+    if (draggedElement) return;
+    
+    const header = this;
+    const section = header.parentElement;
+    
+    draggedSectionElement = section;
+    draggedSectionIndex = parseInt(header.getAttribute('data-section-index'));
+    
+    console.log('Starting drag of section:', draggedSectionIndex);
+    
+    header.style.opacity = '0.4';
+    section.classList.add('dragging-section');
+    
+    // Create section placeholder
+    sectionPlaceholder = document.createElement('div');
+    sectionPlaceholder.className = 'section-placeholder';
+    sectionPlaceholder.style.height = section.offsetHeight + 'px';
+    
+    // Set drag image
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', header.innerHTML);
+}
+
+function handleSectionDragOver(e) {
+    if (draggedSectionIndex === null) return;
+    
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    
+    const grid = e.currentTarget;
+    const afterElement = getSectionAfterElement(grid, e.clientY);
+    
+    if (afterElement == null) {
+        grid.appendChild(sectionPlaceholder);
+    } else {
+        grid.insertBefore(sectionPlaceholder, afterElement);
+    }
+}
+
+function getSectionAfterElement(gridContainer, y) {
+    const draggableElements = [...gridContainer.querySelectorAll('.category-section:not(.dragging-section)')];
+    
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+function handleSectionDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (draggedSectionIndex === null) {
+        console.log('No section being dragged');
+        return;
+    }
+    
+    if (!sectionPlaceholder || !sectionPlaceholder.parentNode) {
+        console.log('No placeholder found');
+        return;
+    }
+    
+    // Get all sections excluding the placeholder and dragged section
+    const grid = document.getElementById('shortcutsGrid');
+    const allChildren = [...grid.children];
+    
+    // Find placeholder position among all children
+    const placeholderIndex = allChildren.indexOf(sectionPlaceholder);
+    
+    if (placeholderIndex === -1) {
+        console.log('Placeholder not in DOM');
+        return;
+    }
+    
+    // Count only category-section elements before placeholder
+    let newIndex = 0;
+    for (let i = 0; i < placeholderIndex; i++) {
+        if (allChildren[i].classList.contains('category-section') && 
+            !allChildren[i].classList.contains('dragging-section')) {
+            newIndex++;
+        }
+    }
+    
+    console.log(`Moving section from ${draggedSectionIndex} to ${newIndex}`);
+    
+    // Only move if position changed
+    if (draggedSectionIndex !== newIndex) {
+        // Move category in array
+        const movedCategory = categories.splice(draggedSectionIndex, 1)[0];
+        categories.splice(newIndex, 0, movedCategory);
+        
+        console.log('Categories reordered:', categories.map(c => getCategoryDisplayName(c)));
+        
+        // Save and re-render
+        saveCategories();
+        renderShortcuts();
+        
+        // Show notification
+        showNotification(`Section "${getCategoryDisplayName(movedCategory)}" moved`, 'success');
+    }
+}
+
+function handleSectionDragEnd(e) {
+    const header = this;
+    const section = header.parentElement;
+    
+    header.style.opacity = '';
+    section.classList.remove('dragging-section');
+    
+    console.log('Drag ended');
+    
+    // Remove placeholder
+    if (sectionPlaceholder && sectionPlaceholder.parentNode) {
+        sectionPlaceholder.parentNode.removeChild(sectionPlaceholder);
+    }
+    
+    // Remove drag-over class from all sections
+    document.querySelectorAll('.category-section').forEach(section => {
+        section.classList.remove('drag-over');
+    });
+    
+    draggedSectionElement = null;
+    draggedSectionIndex = null;
+    sectionPlaceholder = null;
 }
 
 // Delete site
