@@ -1,0 +1,195 @@
+/* ============================================
+   Search Widgets Styles
+   ============================================ */
+
+/* Search Widgets Section */
+.search-widgets {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 50px;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.search-widgets .widget {
+    flex: 1 1 320px;
+    max-width: 400px;
+    min-width: 320px;
+}
+
+.widget {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    padding: 24px;
+    box-shadow: 0 8px 32px var(--card-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    position: relative;
+
+
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(3px) !important;
+}
+
+.widget::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, currentColor, transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.widget:hover::before {
+    opacity: 1;
+}
+
+.widget:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 16px 48px var(--card-shadow);
+    border-color: var(--accent-primary);
+}
+
+.widget-icon {
+    font-size: 36px;
+    text-align: center;
+}
+
+/* Widget Brand Colors */
+.google-widget .widget-icon {
+    color: #4285F4;
+}
+
+.youtube-widget .widget-icon {
+    color: #FF0000;
+}
+
+.perplexity-widget .widget-icon {
+    color: #20808D;
+}
+
+.x-widget .widget-icon {
+    color: #000000;
+}
+
+.reddit-widget .widget-icon {
+    color: #FF4500;
+}
+
+.widget-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.widget-input {
+    flex: 1;
+    padding: 14px 18px;
+    border: 2px solid var(--input-border);
+    border-radius: 14px;
+    background-color: var(--input-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    color: var(--input-text);
+    font-size: 16px;
+    outline: none;
+    transition: all 0.3s ease;
+    min-width: 0;
+}
+
+.widget-input::placeholder {
+    color: rgba(0, 0, 0, 0.3);
+}
+
+.widget-input:focus {
+    border-color: currentColor;
+    background-color: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+}
+
+/* Widget Input Focus Colors */
+.google-widget .widget-input:focus {
+    border-color: #4285F4;
+}
+
+.youtube-widget .widget-input:focus {
+    border-color: #FF0000;
+}
+
+.perplexity-widget .widget-input:focus {
+    border-color: #20808D;
+}
+
+.x-widget .widget-input:focus {
+    border-color: #1DA1F2;
+}
+
+.reddit-widget .widget-input:focus {
+    border-color: #FF4500;
+}
+
+/* Widget Button */
+.widget-btn {
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 14px;
+    background: currentColor;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.widget-btn i {
+    color: white;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.widget-btn:hover {
+    transform: scale(1.1) rotate(5deg);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    filter: brightness(1.1);
+}
+
+.widget-btn:active {
+    transform: scale(0.95);
+}
+
+/* Widget Button Colors */
+.google-widget .widget-btn {
+    background-color: #4285F4;
+}
+
+.youtube-widget .widget-btn {
+    background-color: #FF0000;
+}
+
+.perplexity-widget .widget-btn {
+    background-color: #20808D;
+}
+
+.x-widget .widget-btn {
+    background-color: #000000;
+}
+
+.reddit-widget .widget-btn {
+    background-color: #FF4500;
+}

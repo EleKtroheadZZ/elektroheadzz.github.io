@@ -1,0 +1,113 @@
+/* ============================================
+   Wallpaper System Styles
+   ============================================ */
+
+/* Wallpaper Background */
+.wallpaper-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: -2;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+    object-fit: cover;
+}
+
+.wallpaper-bg.loaded {
+    opacity: 1;
+}
+
+/* Make body transparent when wallpaper is active so it shows through */
+body.wallpaper-active {
+    background: transparent !important;
+    background-image: none !important;
+}
+
+/* Wallpaper overlay for readability */
+body.wallpaper-active::before {
+    background: var(--wallpaper-overlay) !important;
+    background-image: none !important;
+}
+
+/* Adjust card backgrounds when wallpaper is active */
+body.wallpaper-active .widget,
+body.wallpaper-active .category-section {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+/* Photo Credit */
+.photo-credit {
+    position: fixed;
+    bottom: 15px;
+    left: 15px;
+    padding: 8px 14px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.9);
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.photo-credit.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.photo-credit a {
+    color: #fff;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.photo-credit a:hover {
+    color: var(--accent-primary);
+}
+
+/* Wallpaper Toggle */
+.wallpaper-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+    border: 2px solid var(--card-border);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+    transition: transform 0.2s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+    z-index: 1000;
+    backdrop-filter: blur(var(--glass-blur));
+}
+
+.wallpaper-toggle:hover {
+    transform: scale(1.1) rotate(-10deg);
+    box-shadow: 0 12px 32px rgba(102, 126, 234, 0.6);
+}
+
+.wallpaper-toggle:active {
+    transform: scale(0.95);
+}
+
+.wallpaper-toggle.disabled {
+    opacity: 0.5;
+}
+
+.toggle-icon {
+    transition: transform 0.3s ease;
+}
