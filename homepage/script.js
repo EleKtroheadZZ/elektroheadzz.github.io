@@ -16,6 +16,119 @@ const GIST_CONFIG = {
 };
 
 // ========================================
+// UNSPLASH WALLPAPER CONFIGURATION
+// ========================================
+// Add your Unsplash Access Key below
+const UNSPLASH_CONFIG = {
+    accessKey: 'uqdEnidgKFLJwEZc7pI8BqiFeEtF9-zBMYW7CGscGGg', // Replace with your Unsplash Access Key
+    query: 'nature,landscape,minimal', // Search query for random photos
+    orientation: 'landscape' // landscape, portrait, or squarish
+};
+
+// ========================================
+// WALLPAPER SYSTEM
+// ========================================
+
+let wallpaperEnabled = localStorage.getItem('wallpaperEnabled') !== 'false'; // Enabled by default
+
+async function fetchUnsplashWallpaper() {
+    if (!UNSPLASH_CONFIG.accessKey || UNSPLASH_CONFIG.accessKey === 'YOUR_ACCESS_KEY_HERE') {
+        console.warn('Unsplash API key not configured');
+        return;
+    }
+
+    const wallpaperBg = document.getElementById('wallpaperBackground');
+    const photoCredit = document.getElementById('photoCredit');
+    const photographerLink = document.getElementById('photographerLink');
+
+    if (!wallpaperBg) return;
+
+    try {
+        const response = await fetch(
+            `https://api.unsplash.com/photos/random?orientation=${UNSPLASH_CONFIG.orientation}&query=${UNSPLASH_CONFIG.query}`,
+            {
+                headers: {
+                    'Authorization': `Client-ID ${UNSPLASH_CONFIG.accessKey}`
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Unsplash API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        
+        // Preload the image
+        const img = new Image();
+        img.onload = () => {
+            wallpaperBg.style.backgroundImage = `url(${data.urls.regular})`;
+            wallpaperBg.classList.add('loaded');
+            document.body.classList.add('wallpaper-active');
+            
+            // Show photographer credit (required by Unsplash)
+            if (photographerLink && photoCredit) {
+                photographerLink.textContent = data.user.name;
+                photographerLink.href = `${data.user.links.html}?utm_source=homepage&utm_medium=referral`;
+                photoCredit.classList.add('visible');
+            }
+        };
+        img.onerror = () => {
+            console.error('Failed to load wallpaper image');
+        };
+        img.src = data.urls.regular;
+
+    } catch (error) {
+        console.error('Failed to fetch Unsplash wallpaper:', error);
+    }
+}
+
+function disableWallpaper() {
+    const wallpaperBg = document.getElementById('wallpaperBackground');
+    const photoCredit = document.getElementById('photoCredit');
+    
+    if (wallpaperBg) {
+        wallpaperBg.classList.remove('loaded');
+        wallpaperBg.style.backgroundImage = '';
+    }
+    if (photoCredit) {
+        photoCredit.classList.remove('visible');
+    }
+    document.body.classList.remove('wallpaper-active');
+}
+
+function toggleWallpaper() {
+    const wallpaperToggle = document.getElementById('wallpaperToggle');
+    wallpaperEnabled = !wallpaperEnabled;
+    localStorage.setItem('wallpaperEnabled', wallpaperEnabled);
+    
+    if (wallpaperEnabled) {
+        wallpaperToggle?.classList.remove('disabled');
+        fetchUnsplashWallpaper();
+    } else {
+        wallpaperToggle?.classList.add('disabled');
+        disableWallpaper();
+    }
+}
+
+function initWallpaper() {
+    const wallpaperToggle = document.getElementById('wallpaperToggle');
+    
+    // Setup toggle button
+    if (wallpaperToggle) {
+        wallpaperToggle.addEventListener('click', toggleWallpaper);
+        if (!wallpaperEnabled) {
+            wallpaperToggle.classList.add('disabled');
+        }
+    }
+    
+    // Fetch wallpaper if enabled
+    if (wallpaperEnabled) {
+        fetchUnsplashWallpaper();
+    }
+}
+
+// ========================================
 // DEFAULT DATA
 // ========================================
 
@@ -97,9 +210,6 @@ async function loadCategories() {
             // Also restore other settings from cloud
             if (cloudData.categoryStates) {
                 localStorage.setItem('categoryStates', JSON.stringify(cloudData.categoryStates));
-            }
-            if (cloudData.darkMode) {
-                localStorage.setItem('darkMode', cloudData.darkMode);
             }
             
             // Save to localStorage as backup
@@ -338,7 +448,6 @@ async function saveToGist() {
         const data = {
             categories: categories,
             categoryStates: JSON.parse(localStorage.getItem('categoryStates') || '{}'),
-            darkMode: localStorage.getItem('darkMode'),
             websites: JSON.parse(localStorage.getItem('websites') || '[]'),
             lastSync: new Date().toISOString()
         };
@@ -467,22 +576,19 @@ let sectionPlaceholder = null;
 // Cache DOM elements for better performance
 const elements = {
     grid: null,
-    darkModeToggle: null,
-    toggleIcon: null,
     addModal: null,
     editModal: null,
     sectionModal: null,
     sectionForm: null,
     sectionNameInput: null,
     sectionIconInput: null,
-    addSectionBtn: null
+    addSectionBtn: null,
+    addSiteBtn: null
 };
 
 // Initialize cached elements
 function initElements() {
     elements.grid = document.getElementById('shortcutsGrid');
-    elements.darkModeToggle = document.getElementById('darkModeToggle');
-    elements.toggleIcon = elements.darkModeToggle.querySelector('.toggle-icon');
     elements.addModal = document.getElementById('addSiteModal');
     elements.editModal = document.getElementById('editSiteModal');
     elements.sectionModal = document.getElementById('sectionModal');
@@ -490,6 +596,7 @@ function initElements() {
     elements.sectionNameInput = document.getElementById('sectionName');
     elements.sectionIconInput = document.getElementById('sectionIcon');
     elements.addSectionBtn = document.getElementById('addSectionBtn');
+    elements.addSiteBtn = document.getElementById('addSiteBtn');
 }
 
 // Render shortcuts grid with categories
@@ -639,27 +746,6 @@ function renderShortcuts() {
     // Add section drag-over and drop handlers to the grid container
     grid.addEventListener('dragover', handleSectionDragOver);
     grid.addEventListener('drop', handleSectionDrop);
-    
-    // Add "Add Site" button at the end
-    const addButton = document.createElement('div');
-    addButton.className = 'shortcut-item add-site-btn';
-    addButton.setAttribute('data-name', 'Add Site');
-    addButton.setAttribute('role', 'button');
-    addButton.setAttribute('aria-label', 'Add new website shortcut');
-    addButton.setAttribute('tabindex', '0');
-    addButton.innerHTML = `
-        <div class="shortcut-icon">
-            <i class="fas fa-plus add-icon"></i>
-        </div>
-    `;
-    addButton.addEventListener('click', showAddSiteModal);
-    addButton.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            showAddSiteModal();
-        }
-    });
-    grid.appendChild(addButton);
 }
 
 // Helper: Update only specific category grid without full reload
@@ -785,6 +871,14 @@ function createShortcutElement(site, categoryIndex, itemIndex) {
     icon.appendChild(img);
     link.appendChild(icon);
     shortcut.appendChild(link);
+    
+    // Add permanent name label below icon
+    const nameLabel = document.createElement('span');
+    nameLabel.className = 'shortcut-name';
+    nameLabel.textContent = site.name;
+    nameLabel.title = site.name; // Full name on hover
+    shortcut.appendChild(nameLabel);
+    
     shortcut.appendChild(editBtn);
     shortcut.appendChild(deleteBtn);
     
@@ -1495,39 +1589,6 @@ function handleSectionSubmit(e) {
     closeSectionModal();
 }
 
-// Dark mode functionality
-function setupDarkMode() {
-    const darkModeToggle = elements.darkModeToggle || document.getElementById('darkModeToggle');
-    const toggleIcon = elements.toggleIcon || darkModeToggle.querySelector('.toggle-icon');
-    
-    // Toggle dark mode
-    darkModeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('dark-mode');
-        
-        if (document.body.classList.contains('dark-mode')) {
-            toggleIcon.textContent = '☀️';
-            localStorage.setItem('darkMode', 'enabled');
-        } else {
-            toggleIcon.textContent = '🌙';
-            localStorage.setItem('darkMode', 'disabled');
-        }
-    });
-}
-
-// Check for saved dark mode preference or system preference
-function initDarkMode() {
-    const savedMode = localStorage.getItem('darkMode');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const toggleIcon = elements.toggleIcon || document.querySelector('.toggle-icon');
-    
-    if (savedMode === 'enabled' || (savedMode === null && prefersDark)) {
-        document.body.classList.add('dark-mode');
-        if (toggleIcon) toggleIcon.textContent = '☀️';
-    } else {
-        if (toggleIcon) toggleIcon.textContent = '🌙';
-    }
-}
-
 // Search functions
 function searchGoogle(event) {
     event.preventDefault();
@@ -1600,22 +1661,6 @@ inputs.forEach(input => {
     }, 300));
 });
 
-// Listen for system theme changes
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-    const savedMode = localStorage.getItem('darkMode');
-    const toggleIcon = elements.toggleIcon || document.querySelector('.toggle-icon');
-    // Only auto-update if user hasn't set a preference
-    if (savedMode === null && toggleIcon) {
-        if (e.matches) {
-            document.body.classList.add('dark-mode');
-            toggleIcon.textContent = '☀️';
-        } else {
-            document.body.classList.remove('dark-mode');
-            toggleIcon.textContent = '🌙';
-        }
-    }
-});
-
 // Populate category dropdowns in modals
 function populateCategoryDropdowns() {
     const addCategorySelect = document.getElementById('siteCategory');
@@ -1650,7 +1695,6 @@ function exportData() {
     const data = {
         categories: categories,
         categoryStates: JSON.parse(localStorage.getItem('categoryStates') || '{}'),
-        darkMode: localStorage.getItem('darkMode'),
         websites: JSON.parse(localStorage.getItem('websites') || '[]'),
         exportedAt: new Date().toISOString(),
         version: '1.0'
@@ -1702,9 +1746,6 @@ function handleImportFile(event) {
             // Restore other settings
             if (data.categoryStates) {
                 localStorage.setItem('categoryStates', JSON.stringify(data.categoryStates));
-            }
-            if (data.darkMode) {
-                localStorage.setItem('darkMode', data.darkMode);
             }
             if (data.websites) {
                 localStorage.setItem('websites', JSON.stringify(data.websites));
@@ -1785,6 +1826,9 @@ function setupModalHandlers() {
     if (elements.addSectionBtn) {
         elements.addSectionBtn.addEventListener('click', () => openSectionModal('add'));
     }
+    if (elements.addSiteBtn) {
+        elements.addSiteBtn.addEventListener('click', showAddSiteModal);
+    }
     const sectionForm = elements.sectionForm || document.getElementById('sectionForm');
     if (sectionForm) {
         sectionForm.addEventListener('submit', handleSectionSubmit);
@@ -1837,8 +1881,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initElements();
     
     // Initialize features
-    initDarkMode();
-    setupDarkMode();
+    initWallpaper(); // Initialize wallpaper system
     await loadCategories(); // Wait for Gist data to load
     renderShortcuts();
     setupModalHandlers();
@@ -1861,13 +1904,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Keyboard shortcuts
 document.addEventListener('keydown', (e) => {
-    // Ctrl/Cmd + D to toggle dark mode
-    if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
-        e.preventDefault();
-        const darkModeToggle = elements.darkModeToggle || document.getElementById('darkModeToggle');
-        if (darkModeToggle) darkModeToggle.click();
-    }
-    
     // Focus first search input on '/' key
     if (e.key === '/' && document.activeElement.tagName !== 'INPUT') {
         e.preventDefault();
