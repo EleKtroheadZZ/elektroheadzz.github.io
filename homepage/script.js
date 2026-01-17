@@ -1589,53 +1589,395 @@ function handleSectionSubmit(e) {
     closeSectionModal();
 }
 
-// Search functions
+// ========================================
+// UNIFIED SEARCH WIDGET
+// ========================================
+
+// Search engine configurations
+const searchEngines = {
+    google: {
+        name: 'Google',
+        icon: 'fab fa-google',
+        color: '#4285F4',
+        placeholder: 'Search Google...',
+        url: 'https://www.google.com/search?q='
+    },
+    youtube: {
+        name: 'YouTube',
+        icon: 'fab fa-youtube',
+        color: '#FF0000',
+        placeholder: 'Search YouTube...',
+        url: 'https://www.youtube.com/results?search_query='
+    },
+    perplexity: {
+        name: 'Perplexity',
+        icon: 'fas fa-brain',
+        color: '#20808D',
+        placeholder: 'Search Perplexity...',
+        url: 'https://www.perplexity.ai/search?q='
+    },
+    x: {
+        name: 'X',
+        icon: 'fab fa-x-twitter',
+        color: '#000000',
+        placeholder: 'Search X...',
+        url: 'https://twitter.com/search?q='
+    },
+    reddit: {
+        name: 'Reddit',
+        icon: 'fab fa-reddit-alien',
+        color: '#FF4500',
+        placeholder: 'Search Reddit...',
+        url: 'https://www.reddit.com/search/?q='
+    }
+};
+
+// Current search engine state
+let currentEngine = localStorage.getItem('selectedSearchEngine') || 'google';
+const MAX_HISTORY_ITEMS = 8;
+
+// Initialize unified search widget
+function initUnifiedSearch() {
+    const savedEngine = localStorage.getItem('selectedSearchEngine') || 'google';
+    selectSearchEngine(savedEngine, false);
+    
+    setupEngineDropdown();
+    setupSearchHistory();
+}
+
+// Setup engine dropdown toggle
+function setupEngineDropdown() {
+    const selector = document.getElementById('engineSelector');
+    const dropdown = document.getElementById('engineDropdown');
+    
+    if (!selector || !dropdown) return;
+    
+    // Toggle dropdown on click
+    selector.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = dropdown.classList.contains('show');
+        dropdown.classList.toggle('show');
+        selector.setAttribute('aria-expanded', !isOpen);
+    });
+    
+    // Engine option clicks
+    dropdown.querySelectorAll('.engine-option').forEach(option => {
+        option.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const engine = option.dataset.engine;
+            selectSearchEngine(engine);
+            dropdown.classList.remove('show');
+            selector.setAttribute('aria-expanded', 'false');
+        });
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!selector.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.remove('show');
+            selector.setAttribute('aria-expanded', 'false');
+        }
+    });
+    
+    // Close dropdown on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            dropdown.classList.remove('show');
+            selector.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+
+// Select a search engine
+function selectSearchEngine(engineKey, save = true) {
+    const engine = searchEngines[engineKey];
+    if (!engine) return;
+    
+    currentEngine = engineKey;
+    
+    // Update widget styling
+    const widget = document.getElementById('unifiedSearchWidget');
+    const iconElement = document.getElementById('currentEngineIcon');
+    const input = document.getElementById('unifiedSearchInput');
+    const submitBtn = document.getElementById('searchSubmitBtn');
+    
+    if (widget) {
+        widget.style.setProperty('--engine-color', engine.color);
+    }
+    
+    if (iconElement) {
+        iconElement.className = engine.icon;
+    }
+    
+    if (input) {
+        input.placeholder = engine.placeholder;
+    }
+    
+    // Update active state in dropdown
+    document.querySelectorAll('.engine-option').forEach(option => {
+        option.classList.toggle('active', option.dataset.engine === engineKey);
+    });
+    
+    // Save preference
+    if (save) {
+        localStorage.setItem('selectedSearchEngine', engineKey);
+    }
+    
+    // Hide history dropdown when switching engines
+    hideSearchHistory();
+}
+
+// Perform search with current engine
+function performUnifiedSearch(event) {
+    event.preventDefault();
+    
+    const input = document.getElementById('unifiedSearchInput');
+    const query = input.value.trim();
+    
+    if (!query) return false;
+    
+    const engine = searchEngines[currentEngine];
+    if (!engine) return false;
+    
+    // Save to search history (per engine)
+    saveToSearchHistory(currentEngine, query);
+    
+    // Open search in new tab
+    window.open(`${engine.url}${encodeURIComponent(query)}`, '_blank');
+    
+    // Clear input
+    input.value = '';
+    hideSearchHistory();
+    
+    return false;
+}
+
+// ========================================
+// SEARCH HISTORY SYSTEM
+// ========================================
+
+function setupSearchHistory() {
+    const input = document.getElementById('unifiedSearchInput');
+    const historyDropdown = document.getElementById('searchHistoryDropdown');
+    
+    if (!input || !historyDropdown) return;
+    
+    // Show history on focus (for all engines now)
+    input.addEventListener('focus', () => {
+        showSearchHistory();
+    });
+    
+    // Filter history as user types
+    input.addEventListener('input', () => {
+        showSearchHistory(input.value);
+    });
+    
+    // Hide history when clicking outside
+    document.addEventListener('click', (e) => {
+        const inputWrapper = input.closest('.search-input-wrapper');
+        if (!inputWrapper.contains(e.target)) {
+            hideSearchHistory();
+        }
+    });
+    
+    // Keyboard navigation
+    input.addEventListener('keydown', (e) => {
+        handleHistoryNavigation(e);
+    });
+}
+
+function getSearchHistory(engine) {
+    const historyKey = `searchHistory_${engine}`;
+    const history = localStorage.getItem(historyKey);
+    return history ? JSON.parse(history) : [];
+}
+
+function saveToSearchHistory(engine, query) {
+    const historyKey = `searchHistory_${engine}`;
+    let history = getSearchHistory(engine);
+    
+    // Remove duplicate if exists
+    history = history.filter(item => item.toLowerCase() !== query.toLowerCase());
+    
+    // Add to beginning
+    history.unshift(query);
+    
+    // Limit to max items
+    history = history.slice(0, MAX_HISTORY_ITEMS);
+    
+    localStorage.setItem(historyKey, JSON.stringify(history));
+}
+
+function removeFromSearchHistory(engine, query) {
+    const historyKey = `searchHistory_${engine}`;
+    let history = getSearchHistory(engine);
+    history = history.filter(item => item !== query);
+    localStorage.setItem(historyKey, JSON.stringify(history));
+}
+
+function showSearchHistory(filterText = '') {
+    const historyDropdown = document.getElementById('searchHistoryDropdown');
+    const input = document.getElementById('unifiedSearchInput');
+    
+    if (!historyDropdown) return;
+    
+    let history = getSearchHistory(currentEngine);
+    
+    // Filter by input text
+    if (filterText) {
+        history = history.filter(item => 
+            item.toLowerCase().includes(filterText.toLowerCase())
+        );
+    }
+    
+    if (history.length === 0) {
+        historyDropdown.classList.remove('show');
+        return;
+    }
+    
+    const engineConfig = searchEngines[currentEngine];
+    
+    historyDropdown.innerHTML = history.map((item, index) => `
+        <div class="history-item" data-index="${index}" data-query="${escapeHtml(item)}">
+            <i class="fas fa-history"></i>
+            <span class="history-text">${escapeHtml(item)}</span>
+            <button type="button" class="history-remove" data-query="${escapeHtml(item)}" title="Remove">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `).join('');
+    
+    // Add click handlers
+    historyDropdown.querySelectorAll('.history-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+            if (!e.target.closest('.history-remove')) {
+                input.value = item.dataset.query;
+                hideSearchHistory();
+                input.focus();
+            }
+        });
+    });
+    
+    // Add remove handlers
+    historyDropdown.querySelectorAll('.history-remove').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            removeFromSearchHistory(currentEngine, btn.dataset.query);
+            showSearchHistory(input.value);
+        });
+    });
+    
+    historyDropdown.classList.add('show');
+}
+
+function hideSearchHistory() {
+    const historyDropdown = document.getElementById('searchHistoryDropdown');
+    if (historyDropdown) {
+        historyDropdown.classList.remove('show');
+    }
+}
+
+function handleHistoryNavigation(e) {
+    const historyDropdown = document.getElementById('searchHistoryDropdown');
+    const input = document.getElementById('unifiedSearchInput');
+    
+    if (!historyDropdown.classList.contains('show')) return;
+    
+    const items = historyDropdown.querySelectorAll('.history-item');
+    const activeItem = historyDropdown.querySelector('.history-item.active');
+    let activeIndex = -1;
+    
+    if (activeItem) {
+        activeIndex = parseInt(activeItem.dataset.index);
+    }
+    
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        const nextIndex = activeIndex < items.length - 1 ? activeIndex + 1 : 0;
+        updateActiveHistoryItem(items, nextIndex);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        const prevIndex = activeIndex > 0 ? activeIndex - 1 : items.length - 1;
+        updateActiveHistoryItem(items, prevIndex);
+    } else if (e.key === 'Enter' && activeItem) {
+        e.preventDefault();
+        input.value = activeItem.dataset.query;
+        hideSearchHistory();
+    } else if (e.key === 'Escape') {
+        hideSearchHistory();
+    }
+}
+
+function updateActiveHistoryItem(items, activeIndex) {
+    items.forEach((item, index) => {
+        item.classList.toggle('active', index === activeIndex);
+    });
+    
+    // Update input value to match highlighted item
+    const input = document.getElementById('unifiedSearchInput');
+    if (items[activeIndex]) {
+        input.value = items[activeIndex].dataset.query;
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Legacy search functions (kept for backwards compatibility)
 function searchGoogle(event) {
     event.preventDefault();
-    const query = document.getElementById('googleSearch').value.trim();
+    const query = document.getElementById('googleSearch')?.value.trim() || 
+                  document.getElementById('unifiedSearchInput')?.value.trim();
     if (query) {
+        saveToSearchHistory('google', query);
         window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
-        document.getElementById('googleSearch').value = '';
     }
     return false;
 }
 
 function searchYouTube(event) {
     event.preventDefault();
-    const query = document.getElementById('youtubeSearch').value.trim();
+    const query = document.getElementById('youtubeSearch')?.value.trim() ||
+                  document.getElementById('unifiedSearchInput')?.value.trim();
     if (query) {
+        saveToSearchHistory('youtube', query);
         window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, '_blank');
-        document.getElementById('youtubeSearch').value = '';
     }
     return false;
 }
 
 function searchPerplexity(event) {
     event.preventDefault();
-    const query = document.getElementById('perplexitySearch').value.trim();
+    const query = document.getElementById('perplexitySearch')?.value.trim() ||
+                  document.getElementById('unifiedSearchInput')?.value.trim();
     if (query) {
+        saveToSearchHistory('perplexity', query);
         window.open(`https://www.perplexity.ai/search?q=${encodeURIComponent(query)}`, '_blank');
-        document.getElementById('perplexitySearch').value = '';
     }
     return false;
 }
 
 function searchX(event) {
     event.preventDefault();
-    const query = document.getElementById('xSearch').value.trim();
+    const query = document.getElementById('xSearch')?.value.trim() ||
+                  document.getElementById('unifiedSearchInput')?.value.trim();
     if (query) {
+        saveToSearchHistory('x', query);
         window.open(`https://twitter.com/search?q=${encodeURIComponent(query)}`, '_blank');
-        document.getElementById('xSearch').value = '';
     }
     return false;
 }
 
 function searchReddit(event) {
     event.preventDefault();
-    const query = document.getElementById('redditSearch').value.trim();
+    const query = document.getElementById('redditSearch')?.value.trim() ||
+                  document.getElementById('unifiedSearchInput')?.value.trim();
     if (query) {
+        saveToSearchHistory('reddit', query);
         window.open(`https://www.reddit.com/search/?q=${encodeURIComponent(query)}`, '_blank');
-        document.getElementById('redditSearch').value = '';
     }
     return false;
 }
@@ -1882,6 +2224,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Initialize features
     initWallpaper(); // Initialize wallpaper system
+    initUnifiedSearch(); // Initialize unified search widget
     await loadCategories(); // Wait for Gist data to load
     renderShortcuts();
     setupModalHandlers();

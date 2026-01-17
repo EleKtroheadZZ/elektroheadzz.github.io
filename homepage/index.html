@@ -20,55 +20,43 @@
     </button>
 
     <div class="container">
-        <!-- Search Widgets Section -->
+        <!-- Unified Search Widget Section -->
         <section class="search-widgets">
-            <div class="widget google-widget">
-                <div class="widget-icon">
-                    <i class="fab fa-google"></i>
+            <div class="widget unified-search-widget" id="unifiedSearchWidget" style="--engine-color: #4285F4;">
+                <div class="widget-header">
+                    <button type="button" class="engine-selector" id="engineSelector" aria-label="Select search engine" aria-expanded="false">
+                        <i class="fab fa-google" id="currentEngineIcon"></i>
+                        <i class="fas fa-chevron-down engine-dropdown-arrow"></i>
+                    </button>
+                    <div class="engine-dropdown" id="engineDropdown">
+                        <button type="button" class="engine-option" data-engine="google">
+                            <i class="fab fa-google"></i>
+                            <span>Google</span>
+                        </button>
+                        <button type="button" class="engine-option" data-engine="youtube">
+                            <i class="fab fa-youtube"></i>
+                            <span>YouTube</span>
+                        </button>
+                        <button type="button" class="engine-option" data-engine="perplexity">
+                            <i class="fas fa-brain"></i>
+                            <span>Perplexity</span>
+                        </button>
+                        <button type="button" class="engine-option" data-engine="x">
+                            <i class="fab fa-x-twitter"></i>
+                            <span>X</span>
+                        </button>
+                        <button type="button" class="engine-option" data-engine="reddit">
+                            <i class="fab fa-reddit-alien"></i>
+                            <span>Reddit</span>
+                        </button>
+                    </div>
                 </div>
-                <form class="widget-form" onsubmit="return searchGoogle(event)">
-                    <input type="text" placeholder="Search Google..." class="widget-input" id="googleSearch">
-                    <button type="submit" class="widget-btn"><i class="fas fa-search"></i></button>
-                </form>
-            </div>
-
-            <div class="widget youtube-widget">
-                <div class="widget-icon">
-                    <i class="fab fa-youtube"></i>
-                </div>
-                <form class="widget-form" onsubmit="return searchYouTube(event)">
-                    <input type="text" placeholder="Search YouTube..." class="widget-input" id="youtubeSearch">
-                    <button type="submit" class="widget-btn"><i class="fas fa-search"></i></button>
-                </form>
-            </div>
-
-            <div class="widget perplexity-widget">
-                <div class="widget-icon">
-                    <i class="fas fa-brain"></i>
-                </div>
-                <form class="widget-form" onsubmit="return searchPerplexity(event)">
-                    <input type="text" placeholder="Search Perplexity..." class="widget-input" id="perplexitySearch">
-                    <button type="submit" class="widget-btn"><i class="fas fa-search"></i></button>
-                </form>
-            </div>
-
-            <div class="widget x-widget">
-                <div class="widget-icon">
-                    <i class="fab fa-x-twitter"></i>
-                </div>
-                <form class="widget-form" onsubmit="return searchX(event)">
-                    <input type="text" placeholder="Search X..." class="widget-input" id="xSearch">
-                    <button type="submit" class="widget-btn"><i class="fas fa-search"></i></button>
-                </form>
-            </div>
-
-            <div class="widget reddit-widget">
-                <div class="widget-icon">
-                    <i class="fab fa-reddit-alien"></i>
-                </div>
-                <form class="widget-form" onsubmit="return searchReddit(event)">
-                    <input type="text" placeholder="Search Reddit..." class="widget-input" id="redditSearch">
-                    <button type="submit" class="widget-btn"><i class="fas fa-search"></i></button>
+                <form class="widget-form" id="unifiedSearchForm" onsubmit="return performUnifiedSearch(event)">
+                    <div class="search-input-wrapper">
+                        <input type="text" placeholder="Search Google..." class="widget-input" id="unifiedSearchInput" autocomplete="off">
+                        <div class="search-history-dropdown" id="searchHistoryDropdown"></div>
+                    </div>
+                    <button type="submit" class="widget-btn" id="searchSubmitBtn"><i class="fas fa-search"></i></button>
                 </form>
             </div>
         </section>
