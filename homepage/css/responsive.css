@@ -42,9 +42,13 @@
     }
 
     .search-widgets {
-        grid-template-columns: 1fr;
+        max-width: 100%;
         gap: 15px;
         margin-bottom: 30px;
+    }
+
+    .search-widgets .widget {
+        min-width: 280px;
     }
 
     .widget {
@@ -52,8 +56,29 @@
         border-radius: 16px;
     }
 
-    .widget-icon {
+    .widget-icon,
+    .engine-selector {
         font-size: 28px;
+    }
+
+    .engine-dropdown {
+        min-width: 160px;
+    }
+
+    .engine-option {
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+
+    .widget-input {
+        padding: 12px 14px;
+        font-size: 15px;
+    }
+
+    .widget-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 16px;
     }
 
     .shortcuts-grid {
