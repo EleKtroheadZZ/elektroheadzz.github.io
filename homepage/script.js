@@ -21,7 +21,8 @@ const GIST_CONFIG = {
 // Add your Unsplash Access Key below
 const UNSPLASH_CONFIG = {
     accessKey: 'uqdEnidgKFLJwEZc7pI8BqiFeEtF9-zBMYW7CGscGGg', // Replace with your Unsplash Access Key
-    query: 'nature,landscape,minimal', // Search query for random photos
+    // query: 'nature,landscape,minimal', // Search query for random photos
+    query: 'Mountains, Ocean waves, Forest fog, Sunset sky, Aurora lights, Minimalist black, Geometric patterns, Gradient blue, Neon glow, Vaporwave aesthetic, Cyberpunk city, Space nebula, Gaming setup, Dark mode, Futuristic grid', // Search query for random photos
     orientation: 'landscape' // landscape, portrait, or squarish
 };
 
@@ -799,7 +800,7 @@ function createShortcutElement(site, categoryIndex, itemIndex) {
     
     const link = document.createElement('a');
     link.href = site.url;
-    link.target = '_blank';
+    link.target = '_self';
     link.rel = 'noopener noreferrer';
     link.className = 'shortcut-link';
     link.setAttribute('aria-label', `Visit ${site.name}`);
@@ -1742,8 +1743,8 @@ function performUnifiedSearch(event) {
     // Save to search history (per engine)
     saveToSearchHistory(currentEngine, query);
     
-    // Open search in new tab
-    window.open(`${engine.url}${encodeURIComponent(query)}`, '_blank');
+    // Open search in same tab
+    window.location.href = `${engine.url}${encodeURIComponent(query)}`;
     
     // Clear input
     input.value = '';
@@ -1933,7 +1934,7 @@ function searchGoogle(event) {
                   document.getElementById('unifiedSearchInput')?.value.trim();
     if (query) {
         saveToSearchHistory('google', query);
-        window.open(`https://www.google.com/search?q=${encodeURIComponent(query)}`, '_blank');
+        window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
     }
     return false;
 }
@@ -1944,7 +1945,7 @@ function searchYouTube(event) {
                   document.getElementById('unifiedSearchInput')?.value.trim();
     if (query) {
         saveToSearchHistory('youtube', query);
-        window.open(`https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`, '_blank');
+        window.location.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
     }
     return false;
 }
@@ -1955,7 +1956,7 @@ function searchPerplexity(event) {
                   document.getElementById('unifiedSearchInput')?.value.trim();
     if (query) {
         saveToSearchHistory('perplexity', query);
-        window.open(`https://www.perplexity.ai/search?q=${encodeURIComponent(query)}`, '_blank');
+        window.location.href = `https://www.perplexity.ai/search?q=${encodeURIComponent(query)}`;
     }
     return false;
 }
@@ -1966,7 +1967,7 @@ function searchX(event) {
                   document.getElementById('unifiedSearchInput')?.value.trim();
     if (query) {
         saveToSearchHistory('x', query);
-        window.open(`https://twitter.com/search?q=${encodeURIComponent(query)}`, '_blank');
+        window.location.href = `https://twitter.com/search?q=${encodeURIComponent(query)}`;
     }
     return false;
 }
@@ -1977,7 +1978,7 @@ function searchReddit(event) {
                   document.getElementById('unifiedSearchInput')?.value.trim();
     if (query) {
         saveToSearchHistory('reddit', query);
-        window.open(`https://www.reddit.com/search/?q=${encodeURIComponent(query)}`, '_blank');
+        window.location.href = `https://www.reddit.com/search/?q=${encodeURIComponent(query)}`;
     }
     return false;
 }
