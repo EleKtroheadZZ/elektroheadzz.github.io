@@ -12,6 +12,8 @@
     max-width: 700px;
     margin-left: auto;
     margin-right: auto;
+    position: relative;
+    z-index: 1500;
 }
 
 .search-widgets .widget {
@@ -266,13 +268,32 @@
     border: 1px solid var(--card-border);
     border-radius: 14px;
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-    max-height: 300px;
+    max-height: 230px;
     overflow-y: auto;
     opacity: 0;
     visibility: hidden;
     transform: translateY(8px);
     transition: all 0.2s ease;
-    z-index: 99;
+    z-index: 1000;
+}
+
+/* Custom scrollbar for search history */
+.search-history-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.search-history-dropdown::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 8px 0;
+}
+
+.search-history-dropdown::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.search-history-dropdown::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.35);
 }
 
 .search-history-dropdown.show {
