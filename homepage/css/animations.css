@@ -91,3 +91,41 @@
         -webkit-backdrop-filter: blur(8px);
     }
 }
+
+/* Wiggle animation for edit mode on mobile */
+@keyframes wiggle {
+    0%, 100% {
+        transform: rotate(-1deg);
+    }
+    50% {
+        transform: rotate(1deg);
+    }
+}
+
+/* Button pop-in animation */
+@keyframes buttonPopIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+    70% {
+        transform: scale(1.1);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Haptic feedback pulse */
+@keyframes hapticPulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(0.95);
+    }
+    100% {
+        transform: scale(1);
+    }
+}

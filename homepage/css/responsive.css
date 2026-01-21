@@ -155,6 +155,32 @@
 
 /* Small screens */
 @media (max-width: 480px) {
+    /* Force wallpaper to cover entire mobile screen - fixed from top */
+    .wallpaper-bg {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: auto !important;
+        width: 100vw !important;
+        height: 100lvh !important; /* Large viewport - maximum height, pinned from top */
+        min-height: 100lvh !important;
+        background-size: cover !important;
+        background-position: center top !important;
+    }
+    
+    /* Fix body::before overlay for mobile */
+    body::before {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: auto !important;
+        width: 100vw !important;
+        height: 100lvh !important;
+        min-height: 100lvh !important;
+    }
+    
     .search-widgets {
         gap: 12px;
     }
@@ -168,11 +194,12 @@
         height: calc((100vw - 80px) / 4);
         min-width: 64px;
         min-height: 64px;
+        padding-bottom: 8px;
     }
 
     .shortcut-icon {
-        width: calc(100% - 8px);
-        height: calc(100% - 8px);
+        width: calc(100% - 18px);
+        height: calc(100% - 18px);
         border-radius: 12px;
     }
 
@@ -197,11 +224,6 @@
     
     .category-icon {
         font-size: 20px;
-    }
-    
-    .delete-btn,
-    .edit-btn {
-        opacity: 1;
     }
 
     .category-grid {
@@ -265,6 +287,15 @@
     .data-controls {
         gap: 6px;
     }
+    
+    /* Menu button always visible on mobile */
+    .shortcut-menu-btn {
+        opacity: 0.8;
+    }
+    
+    .shortcut-menu-dropdown {
+        min-width: 110px;
+    }
 }
 
 /* Very small screens */
@@ -273,5 +304,35 @@
         grid-template-columns: 1fr;
         gap: 16px;
         padding: 12px;
+    }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+    /* Always show menu button on touch devices */
+    .shortcut-menu-btn {
+        opacity: 0.85;
+    }
+    
+    .shortcut-menu-btn:active {
+        transform: scale(0.9);
+        background: rgba(0, 0, 0, 0.9);
+    }
+    
+    /* Larger touch targets */
+    .shortcut-menu-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 14px;
+    }
+    
+    .menu-option {
+        padding: 12px 14px;
+        font-size: 14px;
+        min-height: 44px;
+    }
+    
+    .shortcut-menu-dropdown {
+        min-width: 120px;
     }
 }

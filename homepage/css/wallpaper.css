@@ -7,8 +7,13 @@
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100lvh; /* Large viewport height - full screen including browser UI area */
+    height: 100dvh; /* Dynamic viewport height for mobile browsers */
+    min-height: -webkit-fill-available; /* iOS Safari fallback */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -32,6 +37,9 @@ body.wallpaper-active {
 body.wallpaper-active::before {
     background: var(--wallpaper-overlay) !important;
     background-image: none !important;
+    height: 100vh !important;
+    height: 100lvh !important;
+    height: 100dvh !important;
 }
 
 /* Adjust card backgrounds when wallpaper is active */
@@ -72,6 +80,15 @@ body.wallpaper-active .category-section {
 
 .photo-credit a:hover {
     color: var(--accent-primary);
+}
+
+.photo-credit #imageLink {
+    text-decoration: none;
+    margin-right: 8px;
+}
+
+.photo-credit #imageLink:hover {
+    color: #ff4d6d;
 }
 
 /* Wallpaper Toggle */

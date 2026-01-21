@@ -7,10 +7,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 12px;
+    gap: var(--spacing-sm, 12px);
     margin: 10px auto 6px;
-    max-width: 1400px;
-    padding: 0 20px;
+    max-width: var(--container-max, 1400px);
+    padding: 0 var(--container-padding, 20px);
+    flex-wrap: wrap;
 }
 
 .action-buttons {
@@ -27,14 +28,16 @@
 .data-btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     border: none;
-    border-radius: 14px;
-    padding: 10px 18px;
-    font-size: 14px;
+    border-radius: var(--radius-sm, 14px);
+    padding: var(--spacing-sm, 10px) var(--spacing-md, 18px);
+    font-size: var(--font-size-sm, 14px);
     font-weight: 600;
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    min-height: var(--touch-target-min, 44px);
 }
 
 .section-btn {
@@ -54,7 +57,7 @@
 
 .section-btn i,
 .data-btn i {
-    font-size: 16px;
+    font-size: var(--font-size-base, 16px);
 }
 
 .section-btn:hover {
@@ -83,13 +86,14 @@
 /* Primary and Secondary Buttons */
 .btn-primary,
 .btn-secondary {
-    padding: 12px 24px;
+    padding: var(--spacing-sm, 12px) var(--spacing-lg, 24px);
     border: none;
-    border-radius: 12px;
-    font-size: 15px;
+    border-radius: var(--radius-sm, 12px);
+    font-size: var(--font-size-base, 15px);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
+    min-height: var(--touch-target-min, 44px);
 }
 
 .btn-primary {

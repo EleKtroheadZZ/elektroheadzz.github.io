@@ -132,70 +132,110 @@
     line-height: 1.2;
 }
 
-/* Delete button */
-.delete-btn {
+/* Shortcut Menu Button (Ellipsis) */
+.shortcut-menu-btn {
     position: absolute;
-    top: -8px;
-    right: -8px;
-    width: 22px;
-    height: 22px;
+    /* top: -6px; */
+    right: -6px;
+    width: 24px;
+    height: 24px;
     border-radius: 50%;
-    background-color: #ff4444;
+    background: rgba(0, 0, 0, 0.6);
     color: white;
-    border: 2px solid var(--bg-color);
-    font-size: 14px;
-    line-height: 1;
+    border: none;
+    font-size: 12px;
     cursor: pointer;
     opacity: 0;
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 0;
     z-index: 200;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
 }
 
-.shortcut-item:hover .delete-btn {
+.shortcut-item:hover .shortcut-menu-btn,
+.shortcut-item.menu-open .shortcut-menu-btn {
     opacity: 1;
 }
 
-.delete-btn:hover {
-    transform: scale(1.2);
-    background-color: #ff0000;
+/* Ensure menu-open item is above other elements */
+.shortcut-item.menu-open {
+    z-index: 1000;
 }
 
-/* Edit button */
-.edit-btn {
-    position: absolute;
-    top: -8px;
-    left: -8px;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background-color: #4285F4;
-    color: white;
-    border: 2px solid var(--bg-color);
-    font-size: 11px;
-    line-height: 1;
-    cursor: pointer;
+.shortcut-menu-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(1.1);
+}
+
+/* Shortcut Menu Dropdown */
+.shortcut-menu-dropdown {
+    position: fixed;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    padding: 6px;
+    min-width: 100px;
     opacity: 0;
-    transition: opacity 0.2s ease, transform 0.2s ease;
+    visibility: hidden;
+    transform: scale(0.95);
+    transition: all 0.2s ease;
+    z-index: 10000;
+}
+
+.shortcut-menu-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+/* Menu Options */
+.menu-option {
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 0;
-    z-index: 200;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-color);
+    text-align: left;
+    transition: background 0.15s ease;
+    white-space: nowrap;
 }
 
-.shortcut-item:hover .edit-btn {
-    opacity: 1;
+.menu-option:hover {
+    background: rgba(0, 0, 0, 0.06);
 }
 
-.edit-btn:hover {
-    transform: scale(1.2);
-    background-color: #3367D6;
+.menu-option i {
+    font-size: 12px;
+    width: 16px;
+    text-align: center;
+}
+
+.edit-option  {
+    color: #4285F4;
+}
+.edit-option:hover  {
+    background: #d8e1f0;
+}
+
+.delete-option {
+    color: #dc3545;
+}
+
+.delete-option:hover {
+    background: rgba(220, 53, 69, 0.1);
 }
 
 /* Add Site Button */

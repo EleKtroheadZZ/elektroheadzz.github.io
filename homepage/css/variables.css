@@ -5,7 +5,8 @@
 :root {
     --bg-color: #f5f7fa;
     --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --text-color: #1a1a2e;
+    /* --text-color: #1a1a2e; */
+    --text-color: #fff;
     --card-bg: rgb(255, 255, 255);
     --card-border: rgba(0, 0, 0, 0.08);
     --card-shadow: rgba(0, 0, 0, 0.1);
