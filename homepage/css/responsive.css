@@ -154,7 +154,25 @@
 }
 
 /* Tablet screens - wallpaper fix for devices like Samsung Tab A9 */
-@media (min-width: 481px) and (max-width: 1024px) {
+@media (min-width: 481px) and (max-width: 1400px) {
+    /* Prevent scrolling issues on tablet */
+    html {
+        overflow-x: hidden !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100lvh !important;
+        height: 100dvh !important;
+    }
+    
+    body {
+        overflow-x: hidden !important;
+        width: 100vw !important;
+        min-height: 100vh !important;
+        min-height: 100lvh !important;
+        min-height: 100dvh !important;
+        position: relative !important;
+    }
+    
     /* Force wallpaper to cover entire tablet screen - fixed from top */
     .wallpaper-bg {
         position: fixed !important;
@@ -163,10 +181,11 @@
         right: 0 !important;
         bottom: auto !important;
         width: 100vw !important;
-        height: 100lvh !important; /* Large viewport - maximum height, pinned from top */
-        min-height: 100lvh !important;
+        height: 100vh !important;
         background-size: cover !important;
         background-position: center top !important;
+        background-attachment: scroll !important;
+        background-repeat: no-repeat !important;
     }
     
     /* Fix body::before overlay for tablet */
@@ -177,8 +196,12 @@
         right: 0 !important;
         bottom: auto !important;
         width: 100vw !important;
+        height: 100vh !important;
         height: 100lvh !important;
+        height: 100dvh !important;
+        min-height: 100vh !important;
         min-height: 100lvh !important;
+        min-height: 100dvh !important;
     }
 }
 
