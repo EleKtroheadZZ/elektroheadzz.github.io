@@ -27,10 +27,82 @@ const UNSPLASH_CONFIG = {
 };
 
 // ========================================
+// SHORTCUT MENU SYSTEM
+// ========================================
+
+// Toggle shortcut menu dropdown
+function toggleShortcutMenu(shortcutElement, menuDropdown, menuBtn) {
+    const isOpen = menuDropdown.classList.contains('show');
+    
+    // Close all other menus first
+    closeAllMenus();
+    
+    // Toggle this menu
+    if (!isOpen) {
+        // Position the dropdown relative to the menu button
+        const btnRect = menuBtn.getBoundingClientRect();
+        menuDropdown.style.top = (btnRect.bottom + 4) + 'px';
+        menuDropdown.style.left = (btnRect.right - menuDropdown.offsetWidth) + 'px';
+        
+        // Ensure it doesn't go off-screen
+        const dropdownRect = menuDropdown.getBoundingClientRect();
+        if (dropdownRect.left < 10) {
+            menuDropdown.style.left = '10px';
+        }
+        if (dropdownRect.right > window.innerWidth - 10) {
+            menuDropdown.style.left = (window.innerWidth - menuDropdown.offsetWidth - 10) + 'px';
+        }
+        
+        menuDropdown.classList.add('show');
+        shortcutElement.classList.add('menu-open');
+    }
+}
+
+// Close all shortcut menus
+function closeAllMenus() {
+    document.querySelectorAll('.shortcut-menu-dropdown.show').forEach(menu => {
+        menu.classList.remove('show');
+    });
+    document.querySelectorAll('.shortcut-item.menu-open').forEach(item => {
+        item.classList.remove('menu-open');
+    });
+}
+
+// Close menus when clicking outside
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.shortcut-menu-btn') && !e.target.closest('.shortcut-menu-dropdown')) {
+        closeAllMenus();
+    }
+});
+
+// ========================================
 // WALLPAPER SYSTEM
 // ========================================
 
 let wallpaperEnabled = localStorage.getItem('wallpaperEnabled') !== 'false'; // Enabled by default
+let lastWallpaperKeyword = localStorage.getItem('lastWallpaperKeyword') || '';
+
+// Get a random keyword different from the last one
+function getRandomWallpaperKeyword() {
+    const keywords = UNSPLASH_CONFIG.query.split(',').map(k => k.trim()).filter(k => k.length > 0);
+    
+    if (keywords.length <= 1) {
+        return keywords[0] || 'nature';
+    }
+    
+    // Filter out the last used keyword
+    const availableKeywords = keywords.filter(k => k.toLowerCase() !== lastWallpaperKeyword.toLowerCase());
+    
+    // Pick a random keyword from available ones
+    const randomIndex = Math.floor(Math.random() * availableKeywords.length);
+    const selectedKeyword = availableKeywords[randomIndex];
+    
+    // Store the selected keyword
+    lastWallpaperKeyword = selectedKeyword;
+    localStorage.setItem('lastWallpaperKeyword', selectedKeyword);
+    
+    return selectedKeyword;
+}
 
 async function fetchUnsplashWallpaper() {
     if (!UNSPLASH_CONFIG.accessKey || UNSPLASH_CONFIG.accessKey === 'YOUR_ACCESS_KEY_HERE') {
@@ -41,12 +113,19 @@ async function fetchUnsplashWallpaper() {
     const wallpaperBg = document.getElementById('wallpaperBackground');
     const photoCredit = document.getElementById('photoCredit');
     const photographerLink = document.getElementById('photographerLink');
+    const imageLink = document.getElementById('imageLink');
 
     if (!wallpaperBg) return;
 
+    // Get a random keyword different from the last one
+    const selectedKeyword = getRandomWallpaperKeyword();
+    
+    // Detect screen orientation - portrait for mobile, landscape for desktop
+    const orientation = window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
+
     try {
         const response = await fetch(
-            `https://api.unsplash.com/photos/random?orientation=${UNSPLASH_CONFIG.orientation}&query=${UNSPLASH_CONFIG.query}`,
+            `https://api.unsplash.com/photos/random?orientation=${orientation}&query=${encodeURIComponent(selectedKeyword)}`,
             {
                 headers: {
                     'Authorization': `Client-ID ${UNSPLASH_CONFIG.accessKey}`
@@ -72,6 +151,10 @@ async function fetchUnsplashWallpaper() {
                 photographerLink.textContent = data.user.name;
                 photographerLink.href = `${data.user.links.html}?utm_source=homepage&utm_medium=referral`;
                 photoCredit.classList.add('visible');
+            }
+            // Set heart icon link to the image on Unsplash
+            if (imageLink) {
+                imageLink.href = `${data.links.html}?utm_source=homepage&utm_medium=referral`;
             }
         };
         img.onerror = () => {
@@ -603,6 +686,12 @@ function initElements() {
 // Render shortcuts grid with categories
 function renderShortcuts() {
     const grid = elements.grid || document.getElementById('shortcutsGrid');
+    
+    // Clean up any existing dropdown menus from body
+    document.querySelectorAll('.shortcut-menu-dropdown').forEach(dropdown => {
+        dropdown.remove();
+    });
+    
     grid.innerHTML = '';
     
     categories.forEach((category, categoryIndex) => {
@@ -847,26 +936,43 @@ function createShortcutElement(site, categoryIndex, itemIndex) {
         }
     };
     
-    const deleteBtn = document.createElement('button');
-    deleteBtn.className = 'delete-btn';
-    deleteBtn.innerHTML = '×';
-    deleteBtn.setAttribute('aria-label', `Remove ${site.name} from shortcuts`);
-    deleteBtn.setAttribute('title', 'Remove site');
-    deleteBtn.addEventListener('click', (e) => {
+    // Create ellipsis menu button and dropdown
+    const menuBtn = document.createElement('button');
+    menuBtn.className = 'shortcut-menu-btn';
+    menuBtn.innerHTML = '<i class="fa-solid fa-ellipsis-vertical"></i>';
+    menuBtn.setAttribute('aria-label', `Options for ${site.name}`);
+    menuBtn.setAttribute('title', 'Options');
+    
+    const menuDropdown = document.createElement('div');
+    menuDropdown.className = 'shortcut-menu-dropdown';
+    
+    const editOption = document.createElement('button');
+    editOption.className = 'menu-option edit-option';
+    editOption.innerHTML = '<i class="fas fa-edit"></i><span>Edit</span>';
+    editOption.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
+        closeAllMenus();
+        showEditSiteModal(categoryIndex, itemIndex);
+    });
+    
+    const deleteOption = document.createElement('button');
+    deleteOption.className = 'menu-option delete-option';
+    deleteOption.innerHTML = '<i class="fas fa-trash"></i><span>Delete</span>';
+    deleteOption.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closeAllMenus();
         deleteSite(categoryIndex, itemIndex);
     });
     
-    const editBtn = document.createElement('button');
-    editBtn.className = 'edit-btn';
-    editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-    editBtn.setAttribute('aria-label', `Edit ${site.name}`);
-    editBtn.setAttribute('title', 'Edit site');
-    editBtn.addEventListener('click', (e) => {
+    menuDropdown.appendChild(editOption);
+    menuDropdown.appendChild(deleteOption);
+    
+    menuBtn.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
-        showEditSiteModal(categoryIndex, itemIndex);
+        toggleShortcutMenu(shortcut, menuDropdown, menuBtn);
     });
     
     icon.appendChild(img);
@@ -880,8 +986,9 @@ function createShortcutElement(site, categoryIndex, itemIndex) {
     nameLabel.title = site.name; // Full name on hover
     shortcut.appendChild(nameLabel);
     
-    shortcut.appendChild(editBtn);
-    shortcut.appendChild(deleteBtn);
+    shortcut.appendChild(menuBtn);
+    // Append dropdown to body for proper z-index stacking
+    document.body.appendChild(menuDropdown);
     
     return shortcut;
 }
@@ -1630,6 +1737,13 @@ const searchEngines = {
         color: '#FF4500',
         placeholder: 'Search Reddit...',
         url: 'https://www.reddit.com/search/?q='
+    },
+    wikipedia: {
+        name: 'Wikipedia',
+        icon: 'fab fa-wikipedia-w',
+        color: '#000000',
+        placeholder: 'Search Wikipedia...',
+        url: 'https://en.wikipedia.org/wiki/Special:Search?search='
     }
 };
 

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
     <meta name="description" content="Personal browser homepage with search widgets and customizable website shortcuts">
     <meta name="theme-color" content="#667eea">
     <title>Home</title>
@@ -49,6 +49,10 @@
                         <button type="button" class="engine-option" data-engine="reddit">
                             <i class="fab fa-reddit-alien"></i>
                             <span>Reddit</span>
+                        </button>
+                        <button type="button" class="engine-option" data-engine="wikipedia">
+                            <i class="fab fa-wikipedia-w"></i>
+                            <span>Wikipedia</span>
                         </button>
                     </div>
                 </div>
@@ -178,6 +182,7 @@
 
     <!-- Unsplash Photo Credit -->
     <div id="photoCredit" class="photo-credit">
+        <a id="imageLink" href="#" target="_blank" rel="noopener noreferrer" title="View image on Unsplash"><i class="fa-solid fa-heart"></i></a>
         Photo by <a id="photographerLink" href="#" target="_blank" rel="noopener noreferrer"></a> on <a href="https://unsplash.com" target="_blank" rel="noopener noreferrer">Unsplash</a>
     </div>
 
